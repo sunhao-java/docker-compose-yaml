@@ -240,7 +240,7 @@ services:
       - harbor
     dns_search: .
     ports:
-      - 9013:80
+      - ${PORT}:80
       - 443:443
       - 4443:4443
     depends_on:

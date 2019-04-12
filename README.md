@@ -8,7 +8,12 @@
 1. copy `./harbor` to `${DOCKER_INSTALL}/harbor`
 
        cp -r ./harbor/ ${DOCKER_INSTALL}/
-2. modify file `${DOCKER_INSTALL}/harbor/config/adminserver/env`
+2. modify file `${DOCKER_INSTALL}/harbor/docker-compose.yml`
+
+       - ${PORT}:80
+       - 443:443
+       - 4443:4443
+3. modify file `${DOCKER_INSTALL}/harbor/config/adminserver/env`
 
        EXT_ENDPOINT=http://${HOSTNAME}:${PORT}
        ...
@@ -20,7 +25,7 @@
        EMAIL_FROM=Harbor <${EMAIL_USR}>
        EMAIL_IDENTITY=
        EMAIL_INSECURE=false
-3. modify file `${DOCKER_INSTALL}/harbor/config/registry/config.yml`
+4. modify file `${DOCKER_INSTALL}/harbor/config/registry/config.yml`
 
        auth:
          token:
@@ -28,8 +33,18 @@
            realm: http://${HOSTNAME}:${PORT}/service/token
            rootcertbundle: /etc/registry/root.crt
            service: harbor-registry
-4. run it
+5. run it
 
        cd ${DOCKER_INSTALL}/harbor
        docker-compose up -d
-5. data in `${DOCKER_VOLUME}/harbor`
+6. data in `${DOCKER_VOLUME}/harbor`
+7. visit via `http://${HOSTNAME}:${PORT}`
+
+# MySQL
+1. copy `./mysql` to `${DOCKER_INSTALL}/mysql`
+2. modify file `${DOCKER_INSTALL}/mysql/docker-compose.yml`
+
+       - "${MYSQL_PORT}:3306"
+       - "${MYSQL_ADMIN_PORT}:8080"
+2. visit mysql via `root:123456@${HOSTNAME}:${MYSQL_PORT}`
+3. visit mysql-admin via `http://${HOSTNAME}:${MYSQL_ADMIN_PORT}`
