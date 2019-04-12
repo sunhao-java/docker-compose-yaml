@@ -84,6 +84,7 @@ services:
       - ${DOCKER_VOLUME}/harbor/database:/var/lib/postgresql/data:z
     networks:
       - harbor
+      - harbor-clair
     dns_search: .
     env_file:
       - ${DOCKER_INSTALL}/harbor/config/db/env
@@ -141,6 +142,7 @@ services:
       - ${DOCKER_VOLUME}/harbor/:/data/:z
     networks:
       - harbor
+      - harbor-clair
     dns_search: .
     depends_on:
       - log
@@ -191,6 +193,7 @@ services:
       - ${DOCKER_INSTALL}/harbor/config/jobservice/config.yml:/etc/jobservice/config.yml:z
     networks:
       - harbor
+      - harbor-clair
     dns_search: .
     depends_on:
       - redis
@@ -240,7 +243,7 @@ services:
       - harbor
     dns_search: .
     ports:
-      - ${PORT}:80
+      - 9013:80
       - 443:443
       - 4443:4443
     depends_on:
@@ -254,7 +257,35 @@ services:
       options:  
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "proxy"
+  clair:
+    networks:
+      - harbor-clair
+    container_name: harbor-clair
+    image: goharbor/clair-photon:v2.0.8-v1.7.5
+    restart: always
+    cap_drop:
+      - ALL
+    cap_add:
+      - DAC_OVERRIDE
+      - SETGID
+      - SETUID
+    cpu_quota: 50000
+    dns_search: .
+    depends_on:
+      - postgresql
+    volumes:
+      - ${DOCKER_INSTALL}/harbor/config/clair/config.yaml:/etc/clair/config.yaml:z
+      - ${DOCKER_INSTALL}/harbor/config/custom-ca-bundle.crt:/harbor_cust_cert/custom-ca-bundle.crt:z
+    logging:
+      driver: "syslog"
+      options:  
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "clair"
+    env_file:
+      ${DOCKER_INSTALL}/harbor/config/clair/clair_env
 networks:
   harbor:
+    external: false
+  harbor-clair:
     external: false
 
