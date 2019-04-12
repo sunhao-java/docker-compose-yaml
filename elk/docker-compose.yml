@@ -1,0 +1,54 @@
+version: "3"
+services:
+  elasticsearch:
+    image: elasticsearch:6.5.4
+    container_name: elasticsearch 
+    restart: always
+    network_mode: "bridge"
+    ports:
+      - "${ES_PORT}:9200"
+    volumes:
+      - ${DOCKER_VOLUME}/elk/elasticsearch-data:/usr/share/elasticsearch/data
+
+  logstash:
+    image: logstash:6.5.4
+    container_name: logstash
+    restart: always
+    network_mode: "bridge"
+    ports:
+      - "${LOGSTASH_PORT}:9250"
+    volumes:
+      - ${DOCKER_INSTALL}/elk/logstash:/config-dir
+    external_links:
+      - elasticsearch:elasticsearch
+    command: logstash -f /config-dir
+    depends_on:
+      - elasticsearch
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:6.2.3
+    container_name: filebeat
+    restart: always
+    network_mode: "bridge"
+    external_links:
+      - logstash:logstash
+    volumes:
+      - ${DOCKER_INSTALL}/elk/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml
+    depends_on:
+      - elasticsearch
+      - logstash
+
+  kibana:
+    image: kibana:6.5.4
+    container_name: kibana
+    restart: always
+    network_mode: "bridge"
+    ports:
+      - "${KIBANA_PORT}:5601"
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch:9200/
+    external_links:
+      - elasticsearch:elasticsearch
+    depends_on:
+      - elasticsearch
+  

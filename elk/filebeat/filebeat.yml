@@ -1,0 +1,11 @@
+filebeat.prospectors:
+- type: log
+  enabled: true
+  paths:
+    - ${FILE_PATH}
+  fields:
+    log_topics: access
+
+output.logstash:
+  hosts: ["logstash:5044"]
+
