@@ -1,0 +1,260 @@
+version: '2'
+services:
+  log:
+    image: goharbor/harbor-log:v1.7.5
+    container_name: harbor-log 
+    restart: always
+    dns_search: .
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - SETGID
+      - SETUID
+    volumes:
+      - ${DOCKER_VOLUME}/harbor/logs:/var/log/docker/:z
+      - ${DOCKER_INSTALL}/harbor/config/log/:/etc/logrotate.d/:z
+    ports:
+      - 127.0.0.1:1514:10514
+    networks:
+      - harbor
+  registry:
+    image: goharbor/registry-photon:v2.6.2-v1.7.5
+    container_name: harbor-registry
+    restart: always
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+    volumes:
+      - ${DOCKER_VOLUME}/harbor/registry:/storage:z
+      - ${DOCKER_INSTALL}/harbor/config/registry/:/etc/registry/:z
+      - ${DOCKER_INSTALL}/harbor/config/custom-ca-bundle.crt:/harbor_cust_cert/custom-ca-bundle.crt:z
+    networks:
+      - harbor
+    dns_search: .
+    depends_on:
+      - log
+    logging:
+      driver: "syslog"
+      options:  
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "registry"
+  registryctl:
+    image: goharbor/harbor-registryctl:v1.7.5
+    container_name: harbor-registryctl
+    env_file:
+      - ${DOCKER_INSTALL}/harbor/config/registryctl/env
+    restart: always
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+    volumes:
+      - ${DOCKER_VOLUME}/harbor/registry:/storage:z
+      - ${DOCKER_INSTALL}/harbor/config/registry/:/etc/registry/:z
+      - ${DOCKER_INSTALL}/harbor/config/registryctl/config.yml:/etc/registryctl/config.yml:z
+    networks:
+      - harbor
+    dns_search: .
+    depends_on:
+      - log
+    logging:
+      driver: "syslog"
+      options:  
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "registryctl"
+  postgresql:
+    image: goharbor/harbor-db:v1.7.5
+    container_name: harbor-db
+    restart: always
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - SETGID
+      - SETUID
+    volumes:
+      - ${DOCKER_VOLUME}/harbor/database:/var/lib/postgresql/data:z
+    networks:
+      - harbor
+    dns_search: .
+    env_file:
+      - ${DOCKER_INSTALL}/harbor/config/db/env
+    depends_on:
+      - log
+    logging:
+      driver: "syslog"
+      options:  
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "postgresql"
+  adminserver:
+    image: goharbor/harbor-adminserver:v1.7.5
+    container_name: harbor-adminserver
+    env_file:
+      - ${DOCKER_INSTALL}/harbor/config/adminserver/env
+    restart: always
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+    volumes:
+      - ${DOCKER_VOLUME}/harbor/config/:/etc/adminserver/config/:z
+      - ${DOCKER_VOLUME}/harbor/secretkey:/etc/adminserver/key:z
+      - ${DOCKER_VOLUME}/harbor/:/data/:z
+    networks:
+      - harbor
+    dns_search: .
+    depends_on:
+      - log
+    logging:
+      driver: "syslog"
+      options:  
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "adminserver"
+  core:
+    image: goharbor/harbor-core:v1.7.5
+    container_name: harbor-core
+    env_file:
+      - ${DOCKER_INSTALL}/harbor/config/core/env
+    restart: always
+    cap_drop:
+      - ALL
+    cap_add:
+      - SETGID
+      - SETUID
+    volumes:
+      - ${DOCKER_INSTALL}/harbor/config/core/app.conf:/etc/core/app.conf:z
+      - ${DOCKER_INSTALL}/harbor/config/core/private_key.pem:/etc/core/private_key.pem:z
+      - ${DOCKER_INSTALL}/harbor/config/core/certificates/:/etc/core/certificates/:z
+      - ${DOCKER_VOLUME}/harbor/secretkey:/etc/core/key:z
+      - ${DOCKER_VOLUME}/harbor/ca_download/:/etc/core/ca/:z
+      - ${DOCKER_VOLUME}/harbor/psc/:/etc/core/token/:z
+      - ${DOCKER_VOLUME}/harbor/:/data/:z
+    networks:
+      - harbor
+    dns_search: .
+    depends_on:
+      - log
+      - adminserver
+      - registry
+    logging:
+      driver: "syslog"
+      options:  
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "core"
+  portal:
+    image: goharbor/harbor-portal:v1.7.5
+    container_name: harbor-portal
+    restart: always
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+      - NET_BIND_SERVICE
+    networks:
+      - harbor
+    dns_search: .
+    depends_on:
+      - log
+      - core
+    logging:
+      driver: "syslog"
+      options:
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "portal"
+
+  jobservice:
+    image: goharbor/harbor-jobservice:v1.7.5
+    container_name: harbor-jobservice
+    env_file:
+      - ${DOCKER_INSTALL}/harbor/config/jobservice/env
+    restart: always
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+    volumes:
+      - ${DOCKER_VOLUME}/harbor/job_logs:/var/log/jobs:z
+      - ${DOCKER_INSTALL}/harbor/config/jobservice/config.yml:/etc/jobservice/config.yml:z
+    networks:
+      - harbor
+    dns_search: .
+    depends_on:
+      - redis
+      - core
+      - adminserver
+    logging:
+      driver: "syslog"
+      options:
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "jobservice"
+  redis:
+    image: goharbor/redis-photon:v1.7.5
+    container_name: harbor-redis
+    restart: always
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+    volumes:
+      - ${DOCKER_VOLUME}/harbor/redis:/var/lib/redis
+    networks:
+      - harbor
+    dns_search: .
+    depends_on:
+      - log
+    logging:
+      driver: "syslog"
+      options:
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "redis"
+  proxy:
+    image: goharbor/nginx-photon:v1.7.5
+    container_name: harbor-nginx
+    restart: always
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+      - NET_BIND_SERVICE
+    volumes:
+      - ${DOCKER_INSTALL}/harbor/config/nginx:/etc/nginx:z
+    networks:
+      - harbor
+    dns_search: .
+    ports:
+      - 9013:80
+      - 443:443
+      - 4443:4443
+    depends_on:
+      - postgresql
+      - registry
+      - core
+      - portal
+      - log
+    logging:
+      driver: "syslog"
+      options:  
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "proxy"
+networks:
+  harbor:
+    external: false
+
