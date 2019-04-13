@@ -35,6 +35,7 @@ services:
       - ${DOCKER_INSTALL}/harbor/config/custom-ca-bundle.crt:/harbor_cust_cert/custom-ca-bundle.crt:z
     networks:
       - harbor
+      - harbor-clair
     dns_search: .
     depends_on:
       - log
