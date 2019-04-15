@@ -1,7 +1,7 @@
 # Harbor
 1. copy `./harbor` to `${DOCKER_INSTALL}/harbor`
 
-       cp -r ./harbor/ ${DOCKER_INSTALL}/
+       cp -r ./ ${DOCKER_INSTALL}/harbor
 2. modify file `${DOCKER_INSTALL}/harbor/docker-compose.yml`
 
        - ${PORT}:80

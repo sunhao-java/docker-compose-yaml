@@ -1,7 +1,7 @@
 # ELK(`E`lasticsearch + `L`ogstash + `K`ibana)
 1. copy `./elk` to `${DOCKER_INSTALL}/elk`
         
-       cp -r ./elk/ ${DOCKER_INSTALL}/
+       cp -r ./ ${DOCKER_INSTALL}/elk
 2. modify file `${DOCKER_INSTALL}/elk/docker-compose.yml`
 
        - "${ES_PORT}:9200"

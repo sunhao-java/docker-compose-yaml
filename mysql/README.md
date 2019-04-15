@@ -1,7 +1,7 @@
 # MySQL
 1. copy `./mysql` to `${DOCKER_INSTALL}/mysql`
         
-       cp -r ./mysql/ ${DOCKER_INSTALL}/
+       cp -r ./ ${DOCKER_INSTALL}/mysql
 2. modify file `${DOCKER_INSTALL}/mysql/docker-compose.yml`
 
        - "${MYSQL_PORT}:3306"

@@ -1,0 +1,14 @@
+version: '2'
+services:
+  gitlab-ce:
+    image: gitlab/gitlab-ce:latest
+    container_name: gitlab-ce
+    restart: always
+    network_mode: "bridge"
+    ports:
+      - "${gitlab_port}:9001"
+      - "${gitlab_ssh_port}:22"
+    volumes:
+      - ${DOCKER_INSTALL}/gitlab/config:/etc/gitlab
+      - ${DOCKER_VOLUME}/gitlab/logs:/var/log/gitlab
+      - ${DOCKER_VOLUME}/gitlab/data:/var/opt/gitlab
