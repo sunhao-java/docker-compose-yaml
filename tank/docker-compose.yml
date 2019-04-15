@@ -1,0 +1,14 @@
+version: '3.1'
+services:
+  tank:
+    image: eyeblue/tank:2.0.0
+    container_name: tank
+    restart: always
+    network_mode: "bridge"
+    ports:
+      - "${tank_port}:6010"
+    external_links:
+      - mysql:db
+    volumes:
+      - ${DOCKER_INSTALL}/tank/tank.json:/go/bin/conf/tank.json
+      - ${DOCKER_VOLUME}/tank/matter:/go/bin/matter

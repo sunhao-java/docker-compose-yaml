@@ -1,0 +1,11 @@
+version: "3"
+services:
+  nexus:
+    image: sonatype/nexus3
+    container_name: nexus
+    restart: always
+    network_mode: "bridge"
+    ports:
+      - "${nexus_port}:8081"
+    volumes:
+      - ${DOCKER_VOLUME}/nexus:/nexus-data

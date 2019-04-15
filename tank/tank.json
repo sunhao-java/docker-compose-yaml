@@ -1,0 +1,9 @@
+{
+  "ServerPort": 6010,
+  "MatterPath": "",
+  "MysqlPort": 3306,
+  "MysqlHost": "db",
+  "MysqlSchema": "tank",
+  "MysqlUsername": "tank",
+  "MysqlPassword": "tank123"
+}
