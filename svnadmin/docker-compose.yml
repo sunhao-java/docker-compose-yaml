@@ -1,0 +1,19 @@
+version: '3.1'
+services:
+  svnadmin-svn:
+    image: home.lodsve.com:9013/lodsve.com/svnadmin
+    container_name: svnadmin
+    restart: always
+    network_mode: "bridge"
+    ports:
+      - "${web_port}:8080"
+      - "${svn_port}:3690"
+    environment:
+      SVN_ADMIN_DB: db
+      SVN_ADMIN_INSTANCE: svnadmin
+      SVN_ADMIN_USERNAME: root
+      SVN_ADMIN_PASSWORD: 123456
+    external_links:
+      - mysql:db
+    volumes:
+      - ${DOCKER_VOLUME}/svnadmin/data:/var/opt/svn

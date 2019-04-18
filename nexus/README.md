@@ -9,4 +9,4 @@
 
        cd ${DOCKER_INSTALL}/nexus
        docker-compose up -d
-6. visit nexus via `http://${ip}:${nexus_port}`
+4. visit nexus via `http://${ip}:${nexus_port}`

@@ -11,4 +11,4 @@
 
        cd ${DOCKER_INSTALL}/redis
        docker-compose up -d
-6. visit redis via `${ip}:${redis_port}` with password `${redis_password}`
+4. visit redis via `${ip}:${redis_port}` with password `${redis_password}`

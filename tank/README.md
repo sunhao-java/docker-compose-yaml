@@ -16,8 +16,8 @@
            "MysqlUsername": "tank",
            "MysqlPassword": "tank123"
        }
-3. run it
+4. run it
 
        cd ${DOCKER_INSTALL}/tank
        docker-compose up -d       
-6. visit redis via `http://${ip}:${tank_port}`
+5. visit tank via `http://${ip}:${tank_port}`
